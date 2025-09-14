@@ -1,0 +1,36 @@
+name: Simple CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: |
+        docker build -t lionelraseemela/nginx-react-hello:latest .
+
+    - name: Push to Docker Hub
+      run: |
+        echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        docker push lionelraseemela/nginx-react-hello:latest
+
+    - name: Deploy to OpenShift
+      run: |
+        # Install OpenShift CLI
+        curl -L https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz | tar xz
+        sudo mv openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/oc /usr/local/bin/
+        
+        # Login to OpenShift
+        echo "${{ secrets.OPENSHIFT_TOKEN }}" | oc login ${{ secrets.OPENSHIFT_SERVER }} --token=
+        
+        # Deploy
+        oc project ${{ secrets.OPENSHIFT_PROJECT }}
+        oc rollout restart deployment/nginx-react-hello
+        oc rollout status deployment/nginx-react-hello
