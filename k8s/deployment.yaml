@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-react-hello
+  labels:
+    app: nginx-react-hello
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-react-hello
+  template:
+    metadata:
+      labels:
+        app: nginx-react-hello
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1002890000
+        fsGroup: 1002890000
+      containers:
+      - name: nginx
+        image: lionelraseemela/nginx-react-hello:latest  
+        ports:
+        - containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1002890000
+          capabilities:
+            drop:
+            - ALL
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi

@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: nginx-react-hello-route
+spec:
+  to:
+    kind: Service
+    name: nginx-react-hello-svc
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
