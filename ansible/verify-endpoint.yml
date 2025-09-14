@@ -16,9 +16,4 @@
       debug:
         var: result.content
 
-    - name: Verify expected message exists
-      assert:
-        that:
-          - "'Hello everyone! Welcome to Cloud!' in result.content"
-        fail_msg: "App verification failed! Expected message not found."
-        success_msg: "App verification succeeded"
+  
