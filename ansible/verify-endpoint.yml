@@ -1,0 +1,24 @@
+- name: Verify deployed OpenShift app
+  hosts: localhost
+  gather_facts: no
+  vars:
+    target_url: "{{ target_url | default('http://localhost:8080') }}"
+
+  tasks:
+    - name: Fetch deployed app content
+      uri:
+        url: "{{ target_url }}"
+        return_content: yes
+        validate_certs: no
+      register: result
+
+    - name: Debug response (optional)
+      debug:
+        var: result.content
+
+    - name: Verify expected message exists
+      assert:
+        that:
+          - "'Hello everyone! Welcome to Cloud!' in result.content"
+        fail_msg: "App verification failed! Expected message not found."
+        success_msg: "App verification succeeded"

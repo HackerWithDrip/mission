@@ -35,3 +35,17 @@ jobs:
         oc project ${{ secrets.OPENSHIFT_PROJECT }}
         oc set image deployment/nginx-react-hello nginx=lionelraseemela/nginx-react-hello:latest --record
         oc rollout status deployment/nginx-react-hello
+
+    - name: Get OpenShift route URL
+      id: getroute
+      run: |
+        ROUTE=$(oc get route nginx-react-hello-route -o jsonpath='{.spec.host}')
+        echo "route_url=https://$ROUTE" >> $GITHUB_OUTPUT
+
+
+    - name: Verify deployment with Ansible
+      run: |
+        pip install ansible
+        ansible-playbook ansible/verify-endpoint.yml \
+          -e target_url=${{ steps.getroute.outputs.route_url }}
+
