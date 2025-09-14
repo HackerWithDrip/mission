@@ -1,0 +1,47 @@
+---
+- name: Fetch content from deployed OpenShift endpoint
+  hosts: openshift_apps
+  gather_facts: no
+  
+  tasks:
+    - name: Get main page content
+      uri:
+        url: "https://nginx-react-hello-route-lionel-raseemela-dev.apps.rm1.0a51.p1.openshiftapps.com"
+        method: GET
+        return_content: yes
+      register: main_content
+
+    - name: Get health endpoint content
+      uri:
+        url: "https://nginx-react-hello-route-lionel-raseemela-dev.apps.rm1.0a51.p1.openshiftapps.com/health"
+        method: GET
+        return_content: yes
+      register: health_content
+
+    - name: Extract clean message from HTML
+      set_fact:
+        clean_message: "{{ main_content.content | regex_replace('<[^>]+>', '') | regex_replace('\\s+', ' ') | trim }}"
+
+    - name: Display clean main page content
+      debug:
+        msg: "Clean message: {{ clean_message }}"
+
+    - name: Display health endpoint content (already clean)
+      debug:
+        msg: "Health status: {{ health_content.content | trim }}"
+
+    - name: Extract just the welcome message
+      set_fact:
+        welcome_message: "{{ main_content.content | regex_replace('.*<div id=\"root\">([^<]+)</div>.*', '\\1') }}"
+
+    - name: Display welcome message only
+      debug:
+        msg: " {{ welcome_message }}"
+
+    - name: Save clean content to file
+      copy:
+        content: |
+          Welcome Message: {{ welcome_message }}
+          Health Status: {{ health_content.content | trim }}
+          Full Clean Content: {{ clean_message }}
+        dest: "./clean_endpoint_content.txt"

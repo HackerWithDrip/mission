@@ -1,0 +1,3 @@
+Welcome Message: Hello everyone! Welcome to Cloud!
+Health Status: healthy
+Full Clean Content: NGINX React HelloHello everyone! Welcome to Cloud!
