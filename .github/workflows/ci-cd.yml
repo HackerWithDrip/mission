@@ -14,11 +14,17 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t lionelraseemela/nginx-react-hello:latest .
+        COMMIT_HASH=$(git rev-parse --short HEAD)
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        IMAGE_TAG="${COMMIT_HASH}-${TIMESTAMP}"
+        echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+        docker build -t lionelraseemela/nginx-react-hello:${IMAGE_TAG} .
+        docker tag lionelraseemela/nginx-react-hello:${IMAGE_TAG} lionelraseemela/nginx-react-hello:latest
 
     - name: Push to Docker Hub
       run: |
         echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        docker push lionelraseemela/nginx-react-hello:${{ env.IMAGE_TAG }}
         docker push lionelraseemela/nginx-react-hello:latest
 
     - name: Install OpenShift CLI
@@ -33,7 +39,7 @@ jobs:
           --token=${{ secrets.OPENSHIFT_TOKEN }} \
           --insecure-skip-tls-verify=true
         oc project ${{ secrets.OPENSHIFT_PROJECT }}
-        oc set image deployment/nginx-react-hello nginx=lionelraseemela/nginx-react-hello:latest --record
+        oc set image deployment/nginx-react-hello nginx=lionelraseemela/nginx-react-hello:${{ env.IMAGE_TAG }} --record
         oc rollout status deployment/nginx-react-hello
 
     - name: Get OpenShift route URL
