@@ -133,6 +133,6 @@ ansible-playbook ansible/verify-endpoint.yml -e target_url=https://<route-hostna
 - No shell access required; use `oc exec` for diagnostics
 
 ### License
-For assessment/mission purposes.
+For assessment/mission purposes. by Lionel Raseemela
 
 
